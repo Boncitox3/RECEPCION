@@ -1,0 +1,1381 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LATINA FARMS - Sistema de Gestión Florícola</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- SheetJS para Excel -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    
+    <!-- Iconos Lucide -->
+    <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.js"></script>
+    
+    <!-- Animate.css -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    
+    <style>
+        /* Estilos tipo Excel mejorados */
+        .excel-table {
+            border-collapse: collapse;
+            border: 2px solid #4b5563;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        }
+        
+        .excel-header {
+            background: linear-gradient(135deg, #1f2937, #374151);
+            border: 1px solid #4b5563;
+            font-weight: bold;
+            text-align: center;
+            padding: 12px 8px;
+            font-size: 14px;
+            color: white;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        }
+        
+        .excel-cell {
+            border: 1px solid #d1d5db;
+            padding: 8px;
+            text-align: center;
+            font-size: 13px;
+            background: white;
+            position: relative;
+            transition: all 0.2s ease;
+        }
+        
+        .excel-cell:hover {
+            background: #f3f4f6;
+            transform: scale(1.02);
+        }
+        
+        .excel-input {
+            width: 80px;
+            padding: 6px 8px;
+            border: 2px solid #e5e7eb;
+            text-align: center;
+            font-size: 13px;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+        
+        .excel-input:focus {
+            border-color: #10b981;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+            transform: scale(1.05);
+        }
+        
+        .tallos-input {
+            width: 90px;
+            padding: 6px 8px;
+            border: 2px solid #3b82f6;
+            text-align: center;
+            font-size: 13px;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+        }
+        
+        .tallos-input:focus {
+            border-color: #1d4ed8;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+            transform: scale(1.05);
+        }
+        
+        .variedad-15-tallos {
+            background: linear-gradient(135deg, #fef3c7, #fde68a) !important;
+            font-weight: bold;
+            border-left: 4px solid #f59e0b !important;
+        }
+        
+        .variedad-20-tallos {
+            background: linear-gradient(135deg, #f0fdf4, #dcfce7) !important;
+            border-left: 4px solid #10b981 !important;
+        }
+        
+        .total-row {
+            background: linear-gradient(135deg, #1e3a8a, #3b82f6) !important;
+            font-weight: bold;
+            color: white !important;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        }
+        
+        /* Pestañas estilo Excel mejoradas */
+        .tab-button {
+            padding: 14px 28px;
+            border: 2px solid #4b5563;
+            border-bottom: none;
+            background: linear-gradient(135deg, #6b7280, #9ca3af);
+            cursor: pointer;
+            font-weight: bold;
+            color: white;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .tab-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+        
+        .tab-button:hover::before {
+            left: 100%;
+        }
+        
+        .tab-button:hover {
+            background: linear-gradient(135deg, #4b5563, #6b7280);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        
+        .tab-button.active {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            border-top: 4px solid #fbbf24;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(16,185,129,0.3);
+        }
+        
+        .tab-content {
+            border: 2px solid #4b5563;
+            border-top: none;
+            background: white;
+            min-height: 500px;
+        }
+        
+        /* Animaciones profesionales */
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+        }
+        
+        @keyframes glow {
+            0%, 100% {
+                box-shadow: 0 0 5px rgba(16, 185, 129, 0.5);
+            }
+            50% {
+                box-shadow: 0 0 20px rgba(16, 185, 129, 0.8);
+            }
+        }
+        
+        .animate-slide-up {
+            animation: slideInUp 0.6s ease-out;
+        }
+        
+        .animate-pulse-custom {
+            animation: pulse 2s infinite;
+        }
+        
+        .animate-glow {
+            animation: glow 2s infinite;
+        }
+        
+        /* Efectos de botones */
+        .btn-primary {
+            background: linear-gradient(135deg, #10b981, #059669);
+            border: none;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-primary::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.3s, height 0.3s;
+        }
+        
+        .btn-primary:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(16, 185, 129, 0.4);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            border: none;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-danger:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(239, 68, 68, 0.4);
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #6b7280, #4b5563);
+            border: none;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-secondary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(107, 114, 128, 0.4);
+        }
+        
+        /* Modal mejorado */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .modal.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .modal-content {
+            background: white;
+            padding: 32px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            transform: scale(0.7);
+            transition: transform 0.3s ease;
+            max-width: 400px;
+            width: 90%;
+        }
+        
+        .modal.show .modal-content {
+            transform: scale(1);
+        }
+        
+        /* Efectos de card mejorados */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        
+        .stats-card {
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Gradientes profesionales mejorados */
+        .gradient-bg {
+            background: linear-gradient(135deg, 
+                #0f172a 0%, 
+                #1e293b 25%, 
+                #334155 50%, 
+                #475569 75%, 
+                #64748b 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+        }
+        
+        .gradient-overlay {
+            background: linear-gradient(135deg, 
+                rgba(16, 185, 129, 0.9) 0%, 
+                rgba(6, 95, 70, 0.95) 50%, 
+                rgba(4, 120, 87, 0.9) 100%);
+        }
+        
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        /* Scrollbar personalizado mejorado */
+        ::-webkit-scrollbar {
+            width: 12px;
+            height: 12px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
+            border-radius: 6px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #10b981, #059669);
+            border-radius: 6px;
+            border: 2px solid #f1f5f9;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, #059669, #047857);
+        }
+        
+        /* Efectos de notificación */
+        .notification-enter {
+            animation: slideInRight 0.5s ease-out;
+        }
+        
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(100px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-gray-900 via-slate-800 to-gray-900">
+    
+    <!-- Notificaciones -->
+    <div id="notification-container" class="fixed top-4 right-4 z-50 space-y-2"></div>
+    
+    <!-- Modal de Confirmación -->
+    <div id="confirmModal" class="modal">
+        <div class="modal-content text-center">
+            <div class="mb-6">
+                <i data-lucide="alert-triangle" class="w-16 h-16 text-red-500 mx-auto mb-4"></i>
+                <h3 class="text-2xl font-bold text-gray-800 mb-2">¿Confirmar Reinicio?</h3>
+                <p class="text-gray-600">¿Estás seguro de que quieres borrar toda la información? Esta acción no se puede deshacer.</p>
+            </div>
+            <div class="flex gap-4 justify-center">
+                <button id="confirmYes" class="btn-danger px-8 py-3">
+                    <i data-lucide="trash-2" class="w-5 h-5 inline mr-2"></i>
+                    Sí, Borrar Todo
+                </button>
+                <button id="confirmNo" class="btn-secondary px-8 py-3">
+                    <i data-lucide="x" class="w-5 h-5 inline mr-2"></i>
+                    Cancelar
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Header Principal Profesional -->
+    <header class="relative overflow-hidden shadow-2xl">
+        <div class="gradient-bg">
+            <div class="gradient-overlay">
+                <div class="container mx-auto px-8 py-12">
+                    <div class="text-center animate-slide-up">
+                        <div class="flex items-center justify-center mb-8">
+                            <div class="bg-white bg-opacity-20 p-4 rounded-2xl mr-6 backdrop-blur-sm">
+                                <i data-lucide="leaf" class="text-emerald-300 w-12 h-12"></i>
+                            </div>
+                            <div class="text-center">
+                                <h1 class="text-7xl font-black text-white drop-shadow-2xl tracking-wider">
+                                    LATINA FARMS
+                                </h1>
+                                <div class="h-2 w-48 bg-gradient-to-r from-emerald-400 via-green-300 to-teal-400 mx-auto mt-4 rounded-full shadow-lg"></div>
+                            </div>
+                            <div class="bg-white bg-opacity-20 p-4 rounded-2xl ml-6 backdrop-blur-sm">
+                                <i data-lucide="flower-2" class="text-emerald-300 w-12 h-12"></i>
+                            </div>
+                        </div>
+                        <div class="bg-white bg-opacity-10 backdrop-blur-md rounded-2xl p-6 mx-auto max-w-4xl border border-white border-opacity-20">
+                            <p class="text-2xl font-bold text-emerald-100 tracking-widest mb-3 uppercase">
+                                PLATAFORMA PARA TALLOS SOBRANTES
+                            </p>
+                            <p class="text-lg text-white opacity-90 font-medium">
+                                Sistema Profesional de Gestión y Control de Producción Florícola
+                            </p>
+                            <div class="flex justify-center mt-4 space-x-6">
+                                <div class="flex items-center text-emerald-200">
+                                    <i data-lucide="shield-check" class="w-5 h-5 mr-2"></i>
+                                    <span class="text-sm font-medium">Seguro</span>
+                                </div>
+                                <div class="flex items-center text-emerald-200">
+                                    <i data-lucide="zap" class="w-5 h-5 mr-2"></i>
+                                    <span class="text-sm font-medium">Rápido</span>
+                                </div>
+                                <div class="flex items-center text-emerald-200">
+                                    <i data-lucide="trending-up" class="w-5 h-5 mr-2"></i>
+                                    <span class="text-sm font-medium">Eficiente</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Efecto de ondas -->
+        <div class="absolute bottom-0 left-0 w-full overflow-hidden">
+            <svg class="relative w-full h-16" preserveAspectRatio="none" viewBox="0 0 1200 120">
+                <path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z" fill="rgba(255,255,255,0.1)"></path>
+            </svg>
+        </div>
+    </header>
+
+    <!-- Contenido Principal -->
+    <main class="container mx-auto px-6 py-8 -mt-8 relative z-10">
+        
+        <!-- Panel de Estadísticas Mejorado -->
+        <section class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="stats-card p-6 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 border-l-4 border-blue-500">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-blue-600 text-sm font-bold uppercase tracking-wide">Total Registros</p>
+                        <p id="total-registros" class="text-4xl font-bold text-blue-700 animate-pulse-custom">0</p>
+                    </div>
+                    <div class="bg-blue-100 p-4 rounded-full">
+                        <i data-lucide="database" class="w-8 h-8 text-blue-600"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="stats-card p-6 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 border-l-4 border-green-500">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-green-600 text-sm font-bold uppercase tracking-wide">Total Mallas</p>
+                        <p id="total-mallas" class="text-4xl font-bold text-green-700 animate-pulse-custom">0</p>
+                    </div>
+                    <div class="bg-green-100 p-4 rounded-full">
+                        <i data-lucide="grid-3x3" class="w-8 h-8 text-green-600"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="stats-card p-6 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 border-l-4 border-purple-500">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-purple-600 text-sm font-bold uppercase tracking-wide">Total Tallos</p>
+                        <p id="total-tallos" class="text-4xl font-bold text-purple-700 animate-pulse-custom">0</p>
+                    </div>
+                    <div class="bg-purple-100 p-4 rounded-full">
+                        <i data-lucide="flower-2" class="w-8 h-8 text-purple-600"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="stats-card p-6 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 border-l-4 border-orange-500">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-orange-600 text-sm font-bold uppercase tracking-wide">Promedio T/M</p>
+                        <p id="promedio-tallos" class="text-4xl font-bold text-orange-700 animate-pulse-custom">0</p>
+                    </div>
+                    <div class="bg-orange-100 p-4 rounded-full">
+                        <i data-lucide="trending-up" class="w-8 h-8 text-orange-600"></i>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Panel de Control Mejorado -->
+        <section class="glass-card rounded-2xl shadow-2xl p-8 mb-8">
+            <div class="flex flex-wrap items-center justify-between gap-6">
+                <div class="flex items-center gap-4">
+                    <div class="bg-gradient-to-r from-green-500 to-emerald-500 p-4 rounded-2xl animate-glow">
+                        <i data-lucide="settings" class="text-white w-8 h-8"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-3xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
+                            Centro de Control Avanzado
+                        </h2>
+                        <p class="text-gray-600 text-lg">Gestión integral de producción florícola</p>
+                    </div>
+                </div>
+                
+                <div class="flex flex-wrap gap-4">
+                    <button id="btn-guardar-todo" class="btn-primary flex items-center gap-2" disabled>
+                        <i data-lucide="save" class="w-5 h-5"></i>
+                        Guardar Todo
+                    </button>
+                    
+                    <button id="btn-limpiar-todo" class="btn-secondary flex items-center gap-2">
+                        <i data-lucide="refresh-cw" class="w-5 h-5"></i>
+                        Limpiar
+                    </button>
+                    
+                    <button id="btn-reiniciar" class="btn-danger flex items-center gap-2">
+                        <i data-lucide="power" class="w-5 h-5"></i>
+                        Reiniciar Sistema
+                    </button>
+                    
+                    <button id="btn-download-excel" class="btn-primary flex items-center gap-2" style="background: linear-gradient(135deg, #3b82f6, #1d4ed8);" disabled>
+                        <i data-lucide="download" class="w-5 h-5"></i>
+                        Exportar Excel
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Pestañas de Fincas Mejoradas -->
+        <section class="glass-card rounded-2xl shadow-2xl overflow-hidden mb-8">
+            <!-- Pestañas -->
+            <div class="flex border-b-2 border-gray-300">
+                <button class="tab-button active" data-finca="FINCA 1">
+                    <i data-lucide="home" class="w-5 h-5 inline mr-2"></i>
+                    FINCA 1
+                </button>
+                <button class="tab-button" data-finca="FINCA 2">
+                    <i data-lucide="building" class="w-5 h-5 inline mr-2"></i>
+                    FINCA 2
+                </button>
+                <button class="tab-button" data-finca="FINCA 3">
+                    <i data-lucide="warehouse" class="w-5 h-5 inline mr-2"></i>
+                    FINCA 3
+                </button>
+                <button class="tab-button" data-finca="FINCA 4">
+                    <i data-lucide="factory" class="w-5 h-5 inline mr-2"></i>
+                    FINCA 4
+                </button>
+            </div>
+            
+            <!-- Contenido de las pestañas -->
+            <div class="tab-content p-8">
+                <div id="finca-info" class="mb-6 p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl border-l-4 border-blue-500 shadow-lg">
+                    <!-- Se actualiza dinámicamente -->
+                </div>
+                
+                <!-- Tabla estilo Excel mejorada -->
+                <div class="overflow-x-auto rounded-2xl shadow-2xl">
+                    <table id="excel-table" class="excel-table w-full">
+                        <thead>
+                            <tr>
+                                <th class="excel-header" style="width: 250px;">
+                                    <i data-lucide="tag" class="w-4 h-4 inline mr-2"></i>
+                                    Variedad
+                                </th>
+                                <th class="excel-header" style="width: 120px;">
+                                    <i data-lucide="grid-3x3" class="w-4 h-4 inline mr-2"></i>
+                                    Mallas
+                                </th>
+                                <th class="excel-header" style="width: 120px;">
+                                    <i data-lucide="calculator" class="w-4 h-4 inline mr-2"></i>
+                                    T/Malla
+                                </th>
+                                <th class="excel-header" style="width: 140px;">
+                                    <i data-lucide="edit" class="w-4 h-4 inline mr-2"></i>
+                                    Total Tallos
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody id="excel-tbody">
+                            <!-- Se genera dinámicamente -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- Resumen de Registros Mejorado -->
+        <section id="resumen-section" class="glass-card rounded-2xl shadow-2xl p-8">
+            <h3 class="text-3xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent mb-6 flex items-center gap-3">
+                <div class="bg-gradient-to-r from-purple-500 to-pink-500 p-3 rounded-2xl">
+                    <i data-lucide="clipboard-list" class="text-white w-7 h-7"></i>
+                </div>
+                Registro Histórico de Producciones
+            </h3>
+            
+            <div id="resumen-container" class="text-center text-gray-500 py-12">
+                <div class="animate-pulse-custom">
+                    <i data-lucide="folder-open" class="w-20 h-20 mx-auto mb-6 text-gray-300"></i>
+                    <p class="text-2xl font-medium mb-2">Registro Vacío</p>
+                    <p class="text-lg">Los datos aparecerán aquí después del primer guardado</p>
+                </div>
+            </div>
+            
+            <div id="resumen-table" class="overflow-x-auto rounded-2xl shadow-xl hidden">
+                <table class="w-full excel-table">
+                    <thead>
+                        <tr>
+                            <th class="excel-header">
+                                <i data-lucide="calendar" class="w-4 h-4 inline mr-2"></i>
+                                Fecha
+                            </th>
+                            <th class="excel-header">
+                                <i data-lucide="map-pin" class="w-4 h-4 inline mr-2"></i>
+                                Finca
+                            </th>
+                            <th class="excel-header">
+                                <i data-lucide="list" class="w-4 h-4 inline mr-2"></i>
+                                Variedades
+                            </th>
+                            <th class="excel-header">
+                                <i data-lucide="grid-3x3" class="w-4 h-4 inline mr-2"></i>
+                                Mallas
+                            </th>
+                            <th class="excel-header">
+                                <i data-lucide="flower-2" class="w-4 h-4 inline mr-2"></i>
+                                Tallos
+                            </th>
+                            <th class="excel-header">
+                                <i data-lucide="settings" class="w-4 h-4 inline mr-2"></i>
+                                Acciones
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody id="resumen-tbody">
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        // ========================================
+        // CONFIGURACIÓN DE DATOS
+        // ========================================
+        
+        const FINCAS_CONFIGURACION = {
+            'FINCA 1': [
+                'AMNESIA', 'ATOMIC', 'BE SWEET', 'CAFE DEL MAR', 'CARNELIAM', 'CHERRY OH',
+                'COUNTRY BLUES', 'COUNTRY HOME', 'EXPLORER', 'FORTUNER', 'FREEDOM', 'GRANDIOSE',
+                'HOT EXPLORER', 'HOT SPOT', 'LIGHT HOUSE', 'LOLA', 'MAGIC TIMES', 'MANDALA',
+                'MONDIAL', 'OPALA', 'PALOMA', 'PANDORA', 'PINK MONDIAL', 'PINK XPRESSION',
+                'PLAYA BLANCA', 'POMA ROSA', 'RED PANTHER', 'SALMA', 'TYCOON', 'W.CHOCOLATE'
+            ],
+            'FINCA 2': [
+                'ALBA', 'ALI', 'ALQUIMIA', 'BARETAS', 'BULEVAR', 'CABARET', 'CANDELIGHT',
+                'CARNELIAM', 'CHECKMATE', 'COLDPLAY', 'COUNTRY BLUES', 'EXPLORER', 'FIESTA',
+                'FREE SPIRIT', 'FRUTTETO', 'FULL MONTY', 'GLAM', 'GOTCHA', 'HEARTS',
+                'HIHG INTENZE', 'HOT FLAME', 'IGUAZU', 'KAHALA', 'LOLA', 'MAGIC TIMES',
+                'MANDALA', 'MANDARIN XPRESSION', 'MENTA', 'MODY BLUE', 'MONDIAL', 'MONSTONE',
+                'ORANGE CRUSH', 'PALOMA', 'PANDORA', 'PHOENIX', 'PINK FLOYD', 'PINK LOVE',
+                'PROUD', 'ROMANTIC CITY', 'SIENTE'
+            ],
+            'FINCA 3': [
+                'BARISTA', 'BE SWEET', 'BOOM FREE', 'BRIGTON', 'CADILLAC', 'CANDELIGHT',
+                'CARAMEL MACCHIATO', 'COLDPLAY', 'COTTON XPRESION', 'COUNTRY BLUES', 'COUNTRY CANDY',
+                'CREAM SHIMER', 'CRYSTAL FLAME', 'DALLAS', 'DESERT ROSE', 'ENCHEIN MENT',
+                'EXPLORER', 'FASINATION', 'FELICITY', 'FORTUNER', 'FREE SPIRIT', 'FREEDOM',
+                'HOT EXPLORER', 'HOT FLAME', 'HOT SPOT', 'KARMA', 'LOLA', 'MAGIC TIMES',
+                'MANDALA', 'MANDARIN XPRESSION', 'MIA', 'MOMENTO', 'MONDIAL', 'NEW FLASH',
+                'OCEAN SONG', 'PALOMA', 'PASION TURKA', 'PHOENIX', 'PINK MONDIAL', 'PINK OHARA',
+                'PINK PROMESS', 'PLAYA BLANCA', 'PRECIUS BELL', 'PRINCESS CROW', 'QUICKSANDS',
+                'RADIANTE', 'RED FLAME', 'RED PANTHER', 'ROMANTIC CITY', 'SHOKIN BLUE',
+                'SIENTE', 'TIBET', 'TOPICAL VERSILLIA', 'TYCOON', 'WHITHE OHARA', 'WILICAT'
+            ],
+            'FINCA 4': [
+                'ANTONIO GARDEN', 'APPLE JACK', 'CANDELIGHT', 'DALLAS', 'DRAGONFLY', 'EXPLORER',
+                'FRENCH KISS', 'FRUTTETO', 'GOTCHA', 'IGUAZU', 'MELON XPRESSION', 'MONDIAL',
+                'NINA', 'PINK FLOYD', 'PRESTIGE', 'POUDER POOL', 'PLAYA BLANCA', 'PROUD',
+                'QUEENS CROWN', 'RED MONSTER', 'RED VOLUTION', 'TROPIC VERCILIA', 'VIPINK'
+            ]
+        };
+
+        // Variedades de 15 tallos por malla
+        const VARIEDADES_15_TALLOS = {
+            'FINCA 1': ['POMA ROSA', 'COUNTRY HOME'],
+            'FINCA 2': ['BULEVAR', 'CANDELIGHT', 'PROUD'],
+            'FINCA 3': ['CANDELIGHT', 'CADILLAC', 'MANDARIN XPRESSION', 'DESERT ROSE'],
+            'FINCA 4': ['CANDELIGHT', 'RED MONSTER', 'IGUAZU']
+        };
+
+        // ========================================
+        // VARIABLES GLOBALES
+        // ========================================
+        
+        let fincaActual = 'FINCA 1';
+        let datosRegistrados = [];
+        let datosTemporal = {};
+
+        // ========================================
+        // FUNCIONES DE ALMACENAMIENTO LOCAL
+        // ========================================
+        
+        function guardarEnLocalStorage() {
+            try {
+                const datos = {
+                    datosRegistrados: datosRegistrados,
+                    fechaActualizacion: new Date().toISOString()
+                };
+                localStorage.setItem('LATINA_FARMS_DATA', JSON.stringify(datos));
+                return true;
+            } catch (error) {
+                console.error('Error guardando en localStorage:', error);
+                return false;
+            }
+        }
+
+        function cargarDeLocalStorage() {
+            try {
+                const datos = localStorage.getItem('LATINA_FARMS_DATA');
+                if (datos) {
+                    const parsed = JSON.parse(datos);
+                    datosRegistrados = parsed.datosRegistrados || [];
+                    return true;
+                }
+                return false;
+            } catch (error) {
+                console.error('Error cargando de localStorage:', error);
+                return false;
+            }
+        }
+
+        function limpiarLocalStorage() {
+            try {
+                localStorage.removeItem('LATINA_FARMS_DATA');
+                return true;
+            } catch (error) {
+                console.error('Error limpiando localStorage:', error);
+                return false;
+            }
+        }
+
+        // ========================================
+        // FUNCIONES PRINCIPALES
+        // ========================================
+        
+        function calcularTallos(finca, variedad, mallas) {
+            if (!mallas || mallas <= 0) return 0;
+            const esEspecial = VARIEDADES_15_TALLOS[finca]?.includes(variedad);
+            return mallas * (esEspecial ? 15 : 20);
+        }
+
+        function inicializarIconos() {
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            } else {
+                // Retry after a short delay if lucide is not loaded yet
+                setTimeout(inicializarIconos, 100);
+            }
+        }
+
+        function mostrarNotificacion(mensaje, tipo = 'success') {
+            const container = document.getElementById('notification-container');
+            const notif = document.createElement('div');
+            
+            const iconos = {
+                success: { icon: 'check-circle-2', color: 'green' },
+                error: { icon: 'alert-circle', color: 'red' },
+                warning: { icon: 'alert-triangle', color: 'yellow' },
+                info: { icon: 'info', color: 'blue' }
+            };
+            
+            const config = iconos[tipo] || iconos.success;
+            
+            notif.className = `bg-${config.color}-500 text-white p-4 rounded-xl shadow-2xl flex items-center gap-3 notification-enter transform hover:scale-105 transition-all`;
+            notif.innerHTML = `
+                <div class="bg-white bg-opacity-20 p-2 rounded-full">
+                    <i data-lucide="${config.icon}" class="w-5 h-5"></i>
+                </div>
+                <span class="font-medium">${mensaje}</span>
+            `;
+            
+            container.appendChild(notif);
+            inicializarIconos();
+            
+            setTimeout(() => {
+                notif.style.transform = 'translateX(100px)';
+                notif.style.opacity = '0';
+                setTimeout(() => notif.remove(), 300);
+            }, 5000);
+        }
+
+        function actualizarTablaExcel() {
+            const tbody = document.getElementById('excel-tbody');
+            const variedades = FINCAS_CONFIGURACION[fincaActual];
+            const variedadesEspeciales = VARIEDADES_15_TALLOS[fincaActual] || [];
+            
+            let totalMallas = 0;
+            let totalTallos = 0;
+            
+            tbody.innerHTML = variedades.map(variedad => {
+                const esEspecial = variedadesEspeciales.includes(variedad);
+                const tallosPorMalla = esEspecial ? 15 : 20;
+                const mallas = datosTemporal[fincaActual]?.[variedad]?.mallas || 0;
+                
+                // Verificar si hay tallos personalizados
+                let tallosTotal;
+                if (datosTemporal[fincaActual]?.[variedad]?.tallosPersonalizados !== undefined) {
+                    tallosTotal = datosTemporal[fincaActual][variedad].tallosPersonalizados;
+                } else {
+                    tallosTotal = calcularTallos(fincaActual, variedad, mallas);
+                }
+                
+                if (mallas > 0) {
+                    totalMallas += mallas;
+                    totalTallos += tallosTotal;
+                }
+                
+                return `
+                    <tr class="hover:shadow-lg transition-all duration-300">
+                        <td class="excel-cell ${esEspecial ? 'variedad-15-tallos' : 'variedad-20-tallos'}">
+                            <div class="flex items-center justify-between">
+                                <span class="font-semibold">${variedad}</span>
+                                ${esEspecial ? '<span class="text-xs bg-amber-500 text-white px-2 py-1 rounded-full font-bold">15 T/M</span>' : '<span class="text-xs bg-green-500 text-white px-2 py-1 rounded-full font-bold">20 T/M</span>'}
+                            </div>
+                        </td>
+                        <td class="excel-cell">
+                            <input type="number" 
+                                   class="excel-input" 
+                                   min="0" 
+                                   max="10000"
+                                   value="${mallas || ''}" 
+                                   onchange="actualizarMallas('${variedad}', this.value)"
+                                   placeholder="0">
+                        </td>
+                        <td class="excel-cell">
+                            <span class="font-bold text-lg ${esEspecial ? 'text-amber-600' : 'text-green-600'}">${tallosPorMalla}</span>
+                        </td>
+                        <td class="excel-cell">
+                            <input type="number" 
+                                   class="tallos-input" 
+                                   min="0" 
+                                   max="100000"
+                                   value="${tallosTotal || ''}" 
+                                   onchange="actualizarTallos('${variedad}', this.value)"
+                                   placeholder="${calcularTallos(fincaActual, variedad, mallas)}">
+                        </td>
+                    </tr>
+                `;
+            }).join('') + `
+                <tr class="total-row">
+                    <td class="excel-cell total-row">
+                        <div class="flex items-center justify-center gap-2">
+                            <i data-lucide="calculator" class="w-5 h-5"></i>
+                            <span class="text-lg font-bold">TOTAL GENERAL</span>
+                        </div>
+                    </td>
+                    <td class="excel-cell total-row text-2xl font-bold">${totalMallas}</td>
+                    <td class="excel-cell total-row">
+                        <i data-lucide="trending-up" class="w-6 h-6"></i>
+                    </td>
+                    <td class="excel-cell total-row text-2xl font-bold">${totalTallos}</td>
+                </tr>
+            `;
+            
+            inicializarIconos();
+            actualizarBotones();
+        }
+
+        function actualizarMallas(variedad, valor) {
+            if (!datosTemporal[fincaActual]) {
+                datosTemporal[fincaActual] = {};
+            }
+            if (!datosTemporal[fincaActual][variedad]) {
+                datosTemporal[fincaActual][variedad] = {};
+            }
+            
+            const mallas = parseInt(valor) || 0;
+            
+            if (mallas > 0) {
+                datosTemporal[fincaActual][variedad].mallas = mallas;
+                // Recalcular tallos automáticamente si no hay personalización
+                if (datosTemporal[fincaActual][variedad].tallosPersonalizados === undefined) {
+                    delete datosTemporal[fincaActual][variedad].tallosPersonalizados;
+                }
+            } else {
+                delete datosTemporal[fincaActual][variedad];
+            }
+            
+            actualizarTablaExcel();
+        }
+
+        function actualizarTallos(variedad, valor) {
+            if (!datosTemporal[fincaActual]) {
+                datosTemporal[fincaActual] = {};
+            }
+            if (!datosTemporal[fincaActual][variedad]) {
+                datosTemporal[fincaActual][variedad] = { mallas: 0 };
+            }
+            
+            const tallos = parseInt(valor) || 0;
+            
+            if (tallos > 0) {
+                datosTemporal[fincaActual][variedad].tallosPersonalizados = tallos;
+            } else {
+                delete datosTemporal[fincaActual][variedad].tallosPersonalizados;
+            }
+            
+            actualizarTablaExcel();
+        }
+
+        function actualizarBotones() {
+            const hayDatos = Object.keys(datosTemporal).some(finca => 
+                Object.keys(datosTemporal[finca] || {}).length > 0
+            );
+            
+            document.getElementById('btn-guardar-todo').disabled = !hayDatos;
+            
+            const hayRegistros = datosRegistrados.length > 0;
+            document.getElementById('btn-download-excel').disabled = !hayRegistros;
+        }
+
+        function cambiarFinca(nuevaFinca) {
+            fincaActual = nuevaFinca;
+            
+            // Actualizar pestañas con animación
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.dataset.finca === nuevaFinca) {
+                    btn.classList.add('active');
+                }
+            });
+            
+            // Actualizar información de la finca
+            const variedadesEspeciales = VARIEDADES_15_TALLOS[nuevaFinca] || [];
+            const totalVariedades = FINCAS_CONFIGURACION[nuevaFinca].length;
+            
+            document.getElementById('finca-info').innerHTML = `
+                <div class="flex items-center gap-4 mb-4">
+                    <div class="bg-gradient-to-r from-blue-500 to-indigo-500 p-3 rounded-full">
+                        <i data-lucide="info" class="text-white w-6 h-6"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-blue-800">${nuevaFinca} - Información Detallada</h3>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-white p-4 rounded-xl shadow-md">
+                        <p class="text-blue-700 font-semibold mb-2">
+                            <i data-lucide="star" class="w-4 h-4 inline mr-2"></i>
+                            Variedades Especiales (15 tallos/malla):
+                        </p>
+                        <div class="flex flex-wrap gap-2">
+                            ${variedadesEspeciales.length > 0 
+                                ? variedadesEspeciales.map(v => `<span class="bg-amber-200 text-amber-800 px-3 py-1 rounded-full text-sm font-bold">${v}</span>`).join('') 
+                                : '<span class="text-gray-500 italic">Ninguna</span>'
+                            }
+                        </div>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl shadow-md">
+                        <p class="text-blue-700 font-semibold mb-2">
+                            <i data-lucide="list" class="w-4 h-4 inline mr-2"></i>
+                            Información General:
+                        </p>
+                        <div class="space-y-1 text-sm">
+                            <p><span class="font-medium">Total variedades:</span> ${totalVariedades}</p>
+                            <p><span class="font-medium">Estándar (20 T/M):</span> ${totalVariedades - variedadesEspeciales.length}</p>
+                            <p><span class="font-medium">Especiales (15 T/M):</span> ${variedadesEspeciales.length}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            inicializarIconos();
+            actualizarTablaExcel();
+        }
+
+        function guardarTodo() {
+            const fecha = new Date().toLocaleDateString('es-ES', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            
+            let totalRegistros = 0;
+            
+            Object.keys(datosTemporal).forEach(finca => {
+                const datosFinca = datosTemporal[finca];
+                if (Object.keys(datosFinca).length > 0) {
+                    const variedadesConDatos = {};
+                    let totalMallas = 0;
+                    let totalTallos = 0;
+                    
+                    Object.entries(datosFinca).forEach(([variedad, datos]) => {
+                        const mallas = datos.mallas || 0;
+                        const tallos = datos.tallosPersonalizados !== undefined 
+                            ? datos.tallosPersonalizados 
+                            : calcularTallos(finca, variedad, mallas);
+                        
+                        if (mallas > 0) {
+                            variedadesConDatos[variedad] = {
+                                mallas: mallas,
+                                tallos: tallos
+                            };
+                            totalMallas += mallas;
+                            totalTallos += tallos;
+                        }
+                    });
+                    
+                    if (Object.keys(variedadesConDatos).length > 0) {
+                        const registro = {
+                            id: Date.now() + Math.random(),
+                            fecha,
+                            finca,
+                            variedades: variedadesConDatos,
+                            totalMallas,
+                            totalTallos
+                        };
+                        
+                        datosRegistrados.push(registro);
+                        totalRegistros++;
+                    }
+                }
+            });
+            
+            // Guardar en localStorage
+            const guardadoExitoso = guardarEnLocalStorage();
+            
+            // Limpiar datos temporales
+            datosTemporal = {};
+            actualizarTablaExcel();
+            actualizarResumen();
+            actualizarEstadisticas();
+            
+            const mensaje = guardadoExitoso 
+                ? `${totalRegistros} finca(s) guardada(s) exitosamente y persistidas localmente`
+                : `${totalRegistros} finca(s) guardada(s) (advertencia: no se pudo guardar localmente)`;
+            
+            mostrarNotificacion(mensaje, guardadoExitoso ? 'success' : 'warning');
+        }
+
+        function limpiarTodo() {
+            datosTemporal = {};
+            actualizarTablaExcel();
+            mostrarNotificacion('Datos temporales limpiados exitosamente', 'info');
+        }
+
+        function mostrarModalReinicio() {
+            const modal = document.getElementById('confirmModal');
+            modal.classList.add('show');
+        }
+
+        function ocultarModalReinicio() {
+            const modal = document.getElementById('confirmModal');
+            modal.classList.remove('show');
+        }
+
+        function reiniciarSistema() {
+            datosRegistrados = [];
+            datosTemporal = {};
+            limpiarLocalStorage();
+            
+            actualizarTablaExcel();
+            actualizarResumen();
+            actualizarEstadisticas();
+            
+            ocultarModalReinicio();
+            mostrarNotificacion('Sistema reiniciado completamente', 'success');
+        }
+
+        function actualizarResumen() {
+            const container = document.getElementById('resumen-container');
+            const table = document.getElementById('resumen-table');
+            const tbody = document.getElementById('resumen-tbody');
+            
+            if (datosRegistrados.length === 0) {
+                container.classList.remove('hidden');
+                table.classList.add('hidden');
+                return;
+            }
+            
+            container.classList.add('hidden');
+            table.classList.remove('hidden');
+            
+            tbody.innerHTML = datosRegistrados.map((registro, index) => `
+                <tr class="hover:shadow-lg transition-all duration-300 ${index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}">
+                    <td class="excel-cell">
+                        <div class="flex items-center gap-2">
+                            <i data-lucide="clock" class="w-4 h-4 text-blue-500"></i>
+                            <span class="font-medium">${registro.fecha}</span>
+                        </div>
+                    </td>
+                    <td class="excel-cell">
+                        <span class="font-bold text-green-600 bg-green-100 px-3 py-1 rounded-full">${registro.finca}</span>
+                    </td>
+                    <td class="excel-cell">
+                        <span class="font-bold text-purple-600">${Object.keys(registro.variedades).length}</span>
+                    </td>
+                    <td class="excel-cell">
+                        <span class="font-bold text-blue-600 text-lg">${registro.totalMallas}</span>
+                    </td>
+                    <td class="excel-cell">
+                        <span class="font-bold text-green-700 text-lg">${registro.totalTallos}</span>
+                    </td>
+                    <td class="excel-cell">
+                        <button onclick="eliminarRegistro('${registro.id}')" 
+                                class="btn-danger p-2 text-sm hover:scale-110 transition-transform">
+                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+            
+            inicializarIconos();
+        }
+
+        function eliminarRegistro(id) {
+            if (confirm('¿Está seguro de que desea eliminar este registro?')) {
+                datosRegistrados = datosRegistrados.filter(reg => reg.id !== parseFloat(id));
+                guardarEnLocalStorage();
+                actualizarResumen();
+                actualizarEstadisticas();
+                mostrarNotificacion('Registro eliminado exitosamente', 'success');
+            }
+        }
+
+        function actualizarEstadisticas() {
+            const totalRegistros = datosRegistrados.length;
+            const totalMallas = datosRegistrados.reduce((sum, reg) => sum + reg.totalMallas, 0);
+            const totalTallos = datosRegistrados.reduce((sum, reg) => sum + reg.totalTallos, 0);
+            const promedio = totalMallas > 0 ? (totalTallos / totalMallas).toFixed(1) : 0;
+            
+            document.getElementById('total-registros').textContent = totalRegistros;
+            document.getElementById('total-mallas').textContent = totalMallas.toLocaleString();
+            document.getElementById('total-tallos').textContent = totalTallos.toLocaleString();
+            document.getElementById('promedio-tallos').textContent = promedio;
+        }
+
+        // **FUNCIÓN EXCEL CON TU FORMATO ESPECÍFICO**
+        function generarExcel() {
+            if (datosRegistrados.length === 0) {
+                mostrarNotificacion('No hay registros para exportar', 'error');
+                return;
+            }
+            
+            try {
+                // Crear workbook
+                const wb = XLSX.utils.book_new();
+                
+                // **HOJA 1: REGISTRO EN TU FORMATO EXACTO**
+                const datosCompletos = [];
+                
+                // Encabezado principal
+                datosCompletos.push(['LATINA FARMS - REGISTRO COMPLETO DE PRODUCCIÓN']);
+                datosCompletos.push(['Fecha de exp ' + new Date().toLocaleString('es-ES')]);
+                datosCompletos.push([]); // Línea vacía
+                
+                // Datos por cada finca registrada
+                const fincasRegistradas = [...new Set(datosRegistrados.map(r => r.finca))];
+                
+                fincasRegistradas.forEach((finca, fincaIndex) => {
+                    const registrosFinca = datosRegistrados.filter(r => r.finca === finca);
+                    
+                    // Separador entre fincas
+                    if (fincaIndex > 0) {
+                        datosCompletos.push([]); // Línea vacía
+                    }
+                    
+                    // Encabezado de finca
+                    datosCompletos.push([`=== ${finca} ===`, '', '', '']);
+                    
+                    // **ENCABEZADOS EN TU ORDEN EXACTO**
+                    datosCompletos.push(['Fecha', 'Variedad', 'Total Tallos', 'Mallas']);
+                    
+                    // Datos de cada registro
+                    let totalMallasFinca = 0;
+                    let totalTallosFinca = 0;
+                    
+                    registrosFinca.forEach(registro => {
+                        Object.entries(registro.variedades).forEach(([variedad, datos]) => {
+                            // **TU FORMATO EXACTO: Fecha | Variedad | Total Tallos | Mallas**
+                            datosCompletos.push([
+                                registro.fecha,     // Columna A: Fecha
+                                variedad,          // Columna B: Variedad  
+                                datos.tallos,      // Columna C: Total Tallos
+                                datos.mallas       // Columna D: Mallas
+                            ]);
+                            totalMallasFinca += datos.mallas;
+                            totalTallosFinca += datos.tallos;
+                        });
+                    });
+                    
+                    // **TOTAL FINCA EN TU FORMATO EXACTO**
+                    datosCompletos.push([
+                        '',               // Columna A: vacía
+                        'TOTAL FINCA',   // Columna B: TOTAL FINCA
+                        totalTallosFinca,// Columna C: Total Tallos
+                        totalMallasFinca // Columna D: Total Mallas
+                    ]);
+                });
+                
+                // **RESUMEN GENERAL**
+                const totalMallas = datosRegistrados.reduce((sum, reg) => sum + reg.totalMallas, 0);
+                const totalTallos = datosRegistrados.reduce((sum, reg) => sum + reg.totalTallos, 0);
+                
+                datosCompletos.push([]); // Línea vacía
+                datosCompletos.push(['=== RESUMEN GENERAL ===']);
+                datosCompletos.push(['Total de registros:', datosRegistrados.length]);
+                datosCompletos.push(['Total mallas:', totalMallas]);
+                datosCompletos.push(['Total tallos:', totalTallos]);
+                datosCompletos.push(['Promedio tal:', (totalTallos / totalMallas).toFixed(1)]);
+                
+                // Crear hoja principal
+                const wsCompleto = XLSX.utils.aoa_to_sheet(datosCompletos);
+                
+                // **CONFIGURAR ANCHOS DE COLUMNAS**
+                wsCompleto['!cols'] = [
+                    { wch: 18 },  // Fecha
+                    { wch: 25 },  // Variedad
+                    { wch: 15 },  // Total Tallos
+                    { wch: 12 }   // Mallas
+                ];
+                
+                // **APLICAR BORDES A TODAS LAS CELDAS**
+                const range = XLSX.utils.decode_range(wsCompleto['!ref']);
+                for (let row = range.s.r; row <= range.e.r; row++) {
+                    for (let col = range.s.c; col <= range.e.c; col++) {
+                        const cellAddress = XLSX.utils.encode_cell({ r: row, c: col });
+                        
+                        if (!wsCompleto[cellAddress]) {
+                            wsCompleto[cellAddress] = { v: '', t: 's' };
+                        }
+                        
+                        // Bordes en todas las celdas
+                        if (!wsCompleto[cellAddress].s) wsCompleto[cellAddress].s = {};
+                        
+                        wsCompleto[cellAddress].s.border = {
+                            top: { style: 'thin', color: { rgb: '000000' } },
+                            bottom: { style: 'thin', color: { rgb: '000000' } },
+                            left: { style: 'thin', color: { rgb: '000000' } },
+                            right: { style: 'thin', color: { rgb: '000000' } }
+                        };
+                        
+                        wsCompleto[cellAddress].s.alignment = { 
+                            horizontal: 'center', 
+                            vertical: 'center' 
+                        };
+                    }
+                }
+                
+                XLSX.utils.book_append_sheet(wb, wsCompleto, 'LATINA FARMS - Registro');
+                
+                // **HOJA 2: DETALLE POR VARIEDAD** (funcionalidad adicional)
+                const datosDetallados = [];
+                datosRegistrados.forEach(registro => {
+                    Object.entries(registro.variedades).forEach(([variedad, datos]) => {
+                        datosDetallados.push({
+                            'Fecha': registro.fecha,
+                            'Finca': registro.finca,
+                            'Variedad': variedad,
+                            'Total Tallos': datos.tallos,
+                            'Mallas': datos.mallas,
+                            'Tallos por Malla': (datos.tallos / datos.mallas).toFixed(1)
+                        });
+                    });
+                });
+                
+                const wsDetallado = XLSX.utils.json_to_sheet(datosDetallados);
+                XLSX.utils.book_append_sheet(wb, wsDetallado, 'Detalle por Variedad');
+                
+                // **HOJA 3: RESUMEN POR FINCA** (funcionalidad adicional)
+                const resumenFincas = fincasRegistradas.map(finca => {
+                    const registrosFinca = datosRegistrados.filter(r => r.finca === finca);
+                    const totalMallas = registrosFinca.reduce((sum, reg) => sum + reg.totalMallas, 0);
+                    const totalTallos = registrosFinca.reduce((sum, reg) => sum + reg.totalTallos, 0);
+                    const totalVariedades = registrosFinca.reduce((sum, reg) => sum + Object.keys(reg.variedades).length, 0);
+                    
+                    return {
+                        'Finca': finca,
+                        'Total Registros': registrosFinca.length,
+                        'Total Variedades': totalVariedades,
+                        'Total Tallos': totalTallos,
+                        'Total Mallas': totalMallas,
+                        'Promedio T/M': (totalTallos / totalMallas).toFixed(1)
+                    };
+                });
+                
+                const wsResumen = XLSX.utils.json_to_sheet(resumenFincas);
+                XLSX.utils.book_append_sheet(wb, wsResumen, 'Resumen por Finca');
+                
+                // **GENERAR ARCHIVO CON NOMBRE DESCRIPTIVO**
+                const fecha = new Date().toISOString().split('T')[0];
+                const nombreArchivo = `LATINA_FARMS_${fecha}_${datosRegistrados.length}reg.xlsx`;
+                
+                XLSX.writeFile(wb, nombreArchivo);
+                
+                mostrarNotificacion(`✅ Excel generado exitosamente: ${nombreArchivo}`, 'success');
+                
+            } catch (error) {
+                console.error('Error generando Excel:', error);
+                mostrarNotificacion('❌ Error al generar el archivo Excel', 'error');
+            }
+        }
+
+        // ========================================
+        // EVENT LISTENERS
+        // ========================================
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            // Cargar datos guardados
+            cargarDeLocalStorage();
+            
+            // Inicializar iconos
+            inicializarIconos();
+            
+            // Configurar pestañas
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.addEventListener('click', () => cambiarFinca(btn.dataset.finca));
+            });
+            
+            // Configurar botones principales
+            document.getElementById('btn-guardar-todo').addEventListener('click', guardarTodo);
+            document.getElementById('btn-limpiar-todo').addEventListener('click', limpiarTodo);
+            document.getElementById('btn-reiniciar').addEventListener('click', mostrarModalReinicio);
+            document.getElementById('btn-download-excel').addEventListener('click', generarExcel);
+            
+            // Configurar modal de confirmación
+            document.getElementById('confirmYes').addEventListener('click', reiniciarSistema);
+            document.getElementById('confirmNo').addEventListener('click', ocultarModalReinicio);
+            
+            // Cerrar modal al hacer clic fuera
+            document.getElementById('confirmModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    ocultarModalReinicio();
+                }
+            });
+            
+            // Inicializar vista
+            cambiarFinca('FINCA 1');
+            actualizarEstadisticas();
+            actualizarResumen();
+            
+            // Mostrar mensaje de bienvenida
+            setTimeout(() => {
+                mostrarNotificacion('Sistema LATINA FARMS cargado exitosamente', 'success');
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
